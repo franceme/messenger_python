@@ -6,7 +6,7 @@ This source code is licensed under the BSD-style license found in the
 LICENSE file in the root directory of this source tree.
 """
 
-import os, sys, json
+import os, sys, json, hashlib
 
 class wrapper():
 	def __init__(self, latestStep: str, localDataFile:str=None, load: bool = False):
@@ -68,6 +68,40 @@ class wrapper():
 
 	def keys(self):
 		return self.current_results.keys()
+
+	@property
+	def hash(self):
+		current_num = 0
+		current_file = f"temp_file_{current_num}.json"
+		while os.path.exists(current_file):
+			current_num += 1
+			current_file = f"temp_file_{current_num}.json"
+		
+		def json_cap(obj):
+			if isinstance(obj,set):
+				return list(obj)
+			return TypeError
+
+		with open(current_file, "w+") as writer:
+			json.dump(self.current_results, writer, default=json_cap)
+
+		BUF_SIZE = 65536
+		sha512 = hashlib.sha512()
+
+		with open(current_file,'rb') as reader:
+			while True:
+				data = reader.read(BUF_SIZE)
+				if not data:
+					break
+
+				sha512.update(data)
+		
+		try:
+			os.remove(current_file)
+		except:
+			pass
+
+		return str(sha512.hexdigest())
 
 	def values(self):
 		return self.current_results.values()
