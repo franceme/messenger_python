@@ -1,6 +1,13 @@
 #!/usr/bin/env python3
+"""
+Copyright (c) 2022, Miles Frantz
+All rights reserved.
+
+This source code is licensed under the BSD-style license found in the
+LICENSE file in the root directory of this source tree. 
+"""
 # region Imports
-import pathlib, zipfile
+import pathlib
 from fileinput import FileInput as finput
 import os
 import sys
@@ -12,20 +19,12 @@ try:
 	from pylint.reporters.json_reporter import JSONReporter
 except:
 	pass
-try:
-	from src.information import VERSION, REQ
-except:
-	pass
-try:
-	from information import VERSION, REQ
-except:
-	pass
 
 # endregion
 # region Basic Information
 here = os.path.abspath(os.path.dirname(__file__))
 py_version = sys.version_info[:2]
-NAME = ""
+NAME = "messenger_python"
 AUTHOR = 'Miles Frantz'
 EMAIL = 'frantzme@vt.edu'
 DESCRIPTION = 'My short description for my project.'
@@ -35,32 +34,7 @@ long_description = pathlib.Path(f"{here}/README.md").read_text(encoding='utf-8')
 REQUIRES_PYTHON = '>=3.8.0'
 RELEASE = "?"
 entry_point = f"src.{NAME}"
-VERSION = "0.0.0"
-
-def zip_program(outputName:str = f"{NAME}.zip"):
-	#http://blog.ablepear.com/2012/10/bundling-python-files-into-stand-alone.html
-	if os.path.exists(outputName):
-		os.system(f"rm {outputName}")
-
-	zipf = zipfile.ZipFile(outputName, 'w', zipfile.ZIP_DEFLATED)
-	success = 0
-	try:
-		zipf.write("setup.py")
-		zipf.write("README.md")
-		zipf.write("__main__.py")
-		for root, dirs, files in os.walk('src/'):
-			for file in [x for x in files if not x.endswith('.pyc')]:
-				ending_path = os.path.relpath(os.path.join(root, file), os.path.join('src/', '..'))
-				zipf.write(
-					os.path.join(root, file),
-					ending_path
-				)
-		print(f"Successful: {outputName}")
-	except Exception as e:
-		print(f"Failing the exception check: {e}")
-		success = 1
-	zipf.close()
-	return(success)
+VERSION = "0.0.1"
 
 def grab_version(update_patch:bool=False,update_minor:bool=False,update_major:bool=False):
 	update = any([update_patch,update_minor,update_major])
@@ -97,9 +71,9 @@ if selfArg('install'):
 	sys.exit(os.system('python3 -m pip install -e .'))
 elif selfArg('upload'):
 	grab_version(True)
-	sys.exit(os.system(f"{sys.executable} setup.py sdist && {sys.executable} -m twine upload --skip-existing dist/*"))
-elif selfArg('zip'):
-	sys.exit(zip_program())
+	cmd = f"{sys.executable} setup.py sdist && {sys.executable} -m twine upload --skip-existing dist/* --verbose"
+	print(cmd)
+	sys.exit(os.system(cmd))
 # endregion
 # region Setup
 
@@ -119,9 +93,7 @@ setup(
 		exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
 	entry_points={
 	},
-	install_requires=[
-		REQ
-	],
+	install_requires=[],
 	include_package_data=True,
 	classifiers=[
 		'Programming Language :: Python',
