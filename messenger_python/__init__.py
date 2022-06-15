@@ -6,7 +6,7 @@ This source code is licensed under the BSD-style license found in the
 LICENSE file in the root directory of this source tree.
 """
 
-import os, sys, json, hashlib
+import os, sys, json, hashlib, pickle
 
 class wrapper():
 	def __init__(self, latestStep: str, localDataFile:str=None, load: bool = False):
@@ -28,8 +28,12 @@ class wrapper():
 	def __enter__(self):
 		print(f"Starting at step {self.setlatestStep}")
 		if os.path.exists(self.local):
-			with open(self.local, "rb") as reader:
-				self.current_results = json.load(reader)
+			if self.local.endswith(".pkl"):
+				with open(self.local, "rb") as reader:
+					self.current_results = pickle.load(reader)
+			elif self.local.endswith(".csv"):
+				with open(self.local, "r") as reader:
+					self.current_results = json.load(reader)
 			os.remove(self.local)
 		else:
 			self.current_results = {
@@ -51,8 +55,12 @@ class wrapper():
 				return list(obj)
 			return TypeError
 
-		with open(self.local, "w+") as writer:
-			json.dump(self.current_results, writer, default=json_cap)
+		if self.local.endswith(".pkl"):
+			with open(self.local, "wb+") as output_file:
+				pickle.dump(self.current_results, output_file)
+		elif self.local.eendswith(".csv"):
+			with open(self.local, "w+") as writer:
+				json.dump(self.current_results, writer, default=json_cap)
 
 		print(f"Exiting at step {self.setlatestStep}")
 		return self
